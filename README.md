@@ -1,51 +1,51 @@
-# Building a Decentralized Task Management System on ICP
+# ICP上で分散型タスク管理システムを構築する
 
-## Table of Contents
+## 目次
 
-1. [Introduction](#introduction)
-2. [Overview of the System](#overview-of-the-system)
-3. [Prerequisites](#prerequisites)
-4. [Defining the Task Model](#defining-the-task-model)
-5. [Implementing Task Management Functions](#implementing-task-management-functions)
-    - [Create Task](#create-task)
-    - [Get All Tasks](#get-all-tasks)
-    - [Get Task by ID](#get-task-by-id)
-    - [Assign Task](#assign-task)
-    - [Complete Task](#complete-task)
-    - [Get Tasks by Assignee](#get-tasks-by-assignee)
-    - [Get Tasks by Poster](#get-tasks-by-poster)
-    - [Get Tasks by Status](#get-tasks-by-status)
-    - [Update Task](#update-task)
-    - [Delete Task](#delete-task)
-6. [Authorization and Security](#authorization-and-security)
-7. [Conclusion](#conclusion)
+1. [はじめに](#はじめに)
+2. [システムの概要](#システムの概要)
+3. [前提条件](#前提条件)
+4. [タスクモデルの定義](#タスクモデルの定義)
+5. [タスク管理機能の実装](#タスク管理機能の実装)
+    - [タスク作成](#タスク作成)
+    - [すべてのタスクを取得](#すべてのタスクを取得)
+    - [IDでタスクを取得](#idでタスクを取得)
+    - [タスクの割り当て](#タスクの割り当て)
+    - [タスク完了](#タスク完了)
+    - [担当者別のタスクを取得](#担当者別のタスクを取得)
+    - [投稿者別のタスクを取得](#投稿者別のタスクを取得)
+    - [ステータス別のタスクを取得](#ステータス別のタスクを取得)
+    - [タスクの更新](#タスクの更新)
+    - [タスクの削除](#タスクの削除)
+6. [認可とセキュリティ](#認可とセキュリティ)
+7. [結論](#結論)
 
-## Introduction
+## はじめに
 
-The Internet Computer Protocol (ICP) provides a robust platform for building decentralized applications (dApps). In this article, we will create a decentralized task management system on ICP. This system allows users to create, update, complete, and delete tasks. Additionally, it ensures authorization checks, ensuring only the task owner can modify or delete their tasks.
+Internet Computer Protocol（ICP）は、分散型アプリケーション（dApp）を構築するための強力なプラットフォームを提供します。本記事では、ICP上で分散型タスク管理システムを構築します。このシステムでは、ユーザーがタスクを作成、更新、完了、削除できるほか、タスク所有者のみがタスクを変更または削除できるよう認可チェックを行います。
 
-## Overview of the System
+## システムの概要
 
-This decentralized task management system offers the following features:
+この分散型タスク管理システムは、以下の機能を提供します。
 
-- **Task Creation:** Users can create tasks with a title, description, and reward.
-- **Task Retrieval:** Retrieve all tasks, tasks by specific criteria (e.g., assigned user or status), or individual tasks by ID.
-- **Task Updates:** Modify task details, mark tasks as completed, or assign them to users.
-- **Task Deletion:** Remove tasks securely with proper authorization checks.
-- **Authorization:** Only task owners can modify or delete their tasks.
+- **タスク作成:** タイトル、説明、報酬を指定してタスクを作成できます。
+- **タスク取得:** すべてのタスク、特定の条件（例: 割り当てられたユーザーやステータス）に基づくタスク、またはIDで個別のタスクを取得します。
+- **タスク更新:** タスクの詳細を変更したり、完了としてマークしたり、ユーザーに割り当てたりできます。
+- **タスク削除:** 適切な認可チェックを伴い、タスクを削除します。
+- **認可:** タスク所有者のみがそのタスクを変更または削除できます。
 
-## Prerequisites
+## 前提条件
 
-Before getting started, ensure you have the following:
+始める前に、以下の要件を確認してください。
 
-- **Node.js**: Installed on your system.
-- **Azle Framework**: A JavaScript/TypeScript SDK for developing on ICP.
-- **UUID Library**: For generating unique task identifiers.
-- **Basic Knowledge**: Familiarity with JavaScript/TypeScript and blockchain concepts.
+- **Node.js:** システムにインストールされていること。
+- **Azleフレームワーク:** ICP上で開発するためのJavaScript/TypeScript SDK。
+- **UUIDライブラリ:** 一意のタスク識別子を生成するため。
+- **基本知識:** JavaScript/TypeScriptやブロックチェーンの概念に関する基本的な理解。
 
-## Defining the Task Model
+## タスクモデルの定義
 
-The task model defines the structure of tasks managed by the system. It is implemented using Azle's `Record` type:
+タスクモデルは、システムで管理されるタスクの構造を定義します。これはAzleの`Record`型を使用して実装されています。
 
 ```typescript
 const Task = Record({
@@ -63,11 +63,11 @@ const Task = Record({
 const taskStorage = StableBTreeMap(text, Task, 1);
 ```
 
-## Implementing Task Management Functions
+## タスク管理機能の実装
 
-### Create Task
+### タスク作成
 
-Users can create tasks with a title, description, and reward. Each task is associated with a unique identifier.
+ユーザーは、タイトル、説明、報酬を指定してタスクを作成できます。各タスクには一意の識別子が関連付けられます。
 
 ```typescript
 createTask: update([
@@ -86,8 +86,6 @@ createTask: update([
         updatedAt: null
     };
     taskStorage.insert(task.id, task);
-    return Ok(`Task "${task.title}" created successfully.`);
+    return Ok(`タスク「${task.title}」が正常に作成されました。`);
 });
 ```
-
-
