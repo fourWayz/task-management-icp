@@ -89,3 +89,75 @@ createTask: update([
     return Ok(`タスク「${task.title}」が正常に作成されました。`);
 });
 ```
+
+### すべてのタスクを取得
+
+システムに保存されているすべてのタスクを取得します。
+
+```typescript
+getAllTasks: query([], Result(Vec(Task), text), () => {
+    const tasks = taskStorage.values();
+    return Ok(tasks);
+});
+```
+
+### IDでタスクを取得
+
+一意の識別子でタスクを取得します。
+
+```typescript
+getTaskById: query([text], Result(Task, text), (taskId: string) => {
+    const task = taskStorage.get(taskId);
+    if ('None' in task) {
+        return Err('タスクが見つかりません。');
+    }
+    return Ok(task.Some);
+});
+```
+
+### タスクの割り当て
+
+タスクを特定のユーザーに割り当てます。
+
+```typescript
+assignTask: update([
+    text, Principal
+], Result(text, text), (taskId: string, assignee: Principal) => {
+    const task = taskStorage.get(taskId);
+    if ('None' in task) {
+        return Err('タスクが見つかりません。');
+    }
+    const updatedTask = {
+        ...task.Some,
+        assignedTo: assignee,
+        status: 'assigned',
+        updatedAt: ic.time()
+    };
+    taskStorage.insert(taskId, updatedTask);
+    return Ok(`タスク「${updatedTask.title}」が${assignee}に割り当てられました。`);
+});
+```
+
+### タスク完了
+
+タスクを完了としてマークします。
+
+```typescript
+completeTask: update([text], Result(text, text), (taskId: string) => {
+    const task = taskStorage.get(taskId);
+    if ('None' in task) {
+        return Err('タスクが見つかりません。');
+    }
+    const updatedTask = {
+        ...task.Some,
+        status: 'completed',
+        updatedAt: ic.time()
+    };
+    taskStorage.insert(taskId, updatedTask);
+    return Ok(`タスク「${updatedTask.title}」が完了としてマークされました。`);
+});
+```
+
+### 担当者別のタスクを取得
+
+特定のユーザーに割り当てられたタスクを取得します。
