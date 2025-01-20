@@ -43,3 +43,51 @@ Before getting started, ensure you have the following:
 - **UUID Library**: For generating unique task identifiers.
 - **Basic Knowledge**: Familiarity with JavaScript/TypeScript and blockchain concepts.
 
+## Defining the Task Model
+
+The task model defines the structure of tasks managed by the system. It is implemented using Azle's `Record` type:
+
+```typescript
+const Task = Record({
+    id: text,
+    title: text,
+    description: text,
+    reward: float64,
+    poster: Principal,
+    assignedTo: Opt(Principal),
+    status: text,
+    createdAt: nat64,
+    updatedAt: Opt(nat64)
+});
+
+const taskStorage = StableBTreeMap(text, Task, 1);
+```
+
+## Implementing Task Management Functions
+
+### Create Task
+
+Users can create tasks with a title, description, and reward. Each task is associated with a unique identifier.
+
+```typescript
+createTask: update([
+    text, text, float64
+], Result(text, text), (title, description, reward) => {
+    const caller = ic.caller();
+    const task = {
+        id: uuidv4(),
+        title,
+        description,
+        reward,
+        poster: caller,
+        assignedTo: null,
+        status: 'open',
+        createdAt: ic.time(),
+        updatedAt: null
+    };
+    taskStorage.insert(task.id, task);
+    return Ok(`Task "${task.title}" created successfully.`);
+});
+```
+
+
