@@ -161,3 +161,80 @@ completeTask: update([text], Result(text, text), (taskId: string) => {
 ### 担当者別のタスクを取得
 
 特定のユーザーに割り当てられたタスクを取得します。
+```typescript
+getTasksByAssignee: query([Principal], Result(Vec(Task), text), (assignee: Principal) => {
+    const tasks = taskStorage.values().filter(task => task.assignedTo === assignee);
+    return Ok(tasks);
+});
+```
+
+### 投稿者別のタスクを取得
+
+特定のユーザーが作成したタスクを取得します。
+
+```typescript
+getTasksByPoster: query([Principal], Result(Vec(Task), text), (poster: Principal) => {
+    const tasks = taskStorage.values().filter(task => task.poster === poster);
+    return Ok(tasks);
+});
+```
+
+### ステータス別のタスクを取得
+
+ステータスに基づいてタスクを取得します。
+
+```typescript
+getTasksByStatus: query([text], Result(Vec(Task), text), (status: text) => {
+    const tasks = taskStorage.values().filter(task => task.status === status);
+    return Ok(tasks);
+});
+```
+
+### タスクの更新
+
+既存のタスクの詳細を変更します。
+
+```typescript
+updateTask: update([
+    text, text, text, float64
+], Result(text, text), (taskId: string, title: string, description: string, reward: float64) => {
+    const task = taskStorage.get(taskId);
+    if ('None' in task) {
+        return Err('タスクが見つかりません。');
+    }
+    const updatedTask = {
+        ...task.Some,
+        title,
+        description,
+        reward,
+        updatedAt: ic.time()
+    };
+    taskStorage.insert(taskId, updatedTask);
+    return Ok(`タスク「${updatedTask.title}」が正常に更新されました。`);
+});
+```
+
+### タスクの削除
+
+システムからタスクを削除します。
+
+```typescript
+deleteTask: update([text], Result(text, text), (taskId: string) => {
+    const task = taskStorage.get(taskId);
+    if ('None' in task) {
+        return Err('タスクが見つかりません。');
+    }
+    taskStorage.remove(taskId);
+    return Ok(`タスク「${task.Some.title}」が正常に削除されました。`);
+});
+```
+
+## 認可とセキュリティ
+
+認可チェックにより、タスク所有者のみがそのタスクを更新または削除できることを保証します。これは、呼び出し元のID（`ic.caller()`）をタスクの`poster`と照合することで実施されます。
+
+## 結論
+
+ICPとAzleを活用することで、堅牢な機能と認可チェックを備えた分散型タスク管理システムを実装しました。このシステムは、Internet Computer Protocol上でセキュアかつスケーラブルなdAppを構築する可能性を示しています。
+
+
